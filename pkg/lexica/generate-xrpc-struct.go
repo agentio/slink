@@ -71,6 +71,10 @@ func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, prope
 			} else {
 				fmt.Fprintf(s, "%s *[]byte `json:\"%s,omitempty\"`\n", capitalize(propertyName), propertyName)
 			}
+			if propertyName == "blocks" {
+				// add an extra field for expansions of "blocks" (CAR) content
+				fmt.Fprintf(s, "%s any `json:\"%s,omitempty\"`\n", "BlocksCARContent", "blocksCARContent")
+			}
 		case "cid-link":
 			if required {
 				fmt.Fprintf(s, "%s string `json:\"%s\"`\n", capitalize(propertyName), propertyName)
