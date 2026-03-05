@@ -15,6 +15,10 @@ type Link struct {
 	LexiconLink string `json:"$link"`
 }
 
+type Bytes struct {
+	Bytes string `json:"$bytes"`
+}
+
 func LexiconTypeFromJSONBytes(data []byte) string {
 	type TypedRecord struct {
 		LexiconTypeID string `json:"$type"`

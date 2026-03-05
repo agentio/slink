@@ -67,9 +67,9 @@ func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, prope
 			fmt.Fprintf(s, "%s *%s `json:\"%s,omitempty\"`\n", capitalize(propertyName), uniontype, propertyName)
 		case "bytes":
 			if required {
-				fmt.Fprintf(s, "%s []byte `json:\"%s\"`\n", capitalize(propertyName), propertyName)
+				fmt.Fprintf(s, "%s slink.Bytes `json:\"%s\"`\n", capitalize(propertyName), propertyName)
 			} else {
-				fmt.Fprintf(s, "%s *[]byte `json:\"%s,omitempty\"`\n", capitalize(propertyName), propertyName)
+				fmt.Fprintf(s, "%s *slink.Bytes `json:\"%s,omitempty\"`\n", capitalize(propertyName), propertyName)
 			}
 			if propertyName == "blocks" {
 				// add an extra field for expansions of "blocks" (CAR) content
