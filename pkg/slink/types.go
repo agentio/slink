@@ -5,17 +5,21 @@ import (
 	"encoding/json"
 )
 
+// Blob represents the Lexicon "blob" type (https://atproto.com/specs/data-model#blob-type).
 type Blob struct {
 	LexiconTypeID string `json:"$type,omitempty"`
 	Ref           Link   `json:"ref,omitempty"`
 	MimeType      string `json:"mimeType,omitempty"`
 	Size          int64  `json:"size"`
+	Cid           string `json:"cid"` // deprecated legacy blob format (see docs linked above).
 }
 
+// Link represents the Lexicon "cid-link" type (https://atproto.com/specs/data-model#link).
 type Link struct {
 	LexiconLink string `json:"$link"`
 }
 
+// Bytes represents the Lexicon "bytes" type (https://atproto.com/specs/data-model#bytes).
 type Bytes struct {
 	Bytes []byte
 }
@@ -28,15 +32,18 @@ func (b Bytes) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v)
 }
 
-func (b *Bytes) UnmarsalJSON(data []byte) (err error) {
+func (b *Bytes) UnmarshalJSON(data []byte) (err error) {
 	var v struct {
 		Bytes string `json:"$bytes"`
 	}
-	json.Unmarshal(data, &v)
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
 	b.Bytes, err = base64.RawStdEncoding.DecodeString(v.Bytes)
 	return
 }
 
+// LexiconTypeFromJSONBytes extracts the lexicon type from an otherwise-unparsed value.
 func LexiconTypeFromJSONBytes(data []byte) string {
 	type TypedRecord struct {
 		LexiconTypeID string `json:"$type"`
@@ -49,6 +56,7 @@ func LexiconTypeFromJSONBytes(data []byte) string {
 	return record.LexiconTypeID
 }
 
+// MarshalWithLexiconType marshals an object, adding a specified type.
 func MarshalWithLexiconType(t string, v any) ([]byte, error) {
 	b, err := json.Marshal(v)
 	if err != nil {
