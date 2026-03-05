@@ -16,7 +16,7 @@ func (lexicon *Lexicon) resolveItemsType(defname, propname string, items *Items)
 	case "unknown":
 		return "any"
 	case "cid-link":
-		return "string"
+		return "slink.Link"
 	case "ref":
 		return lexicon.resolveRefType(items.Ref)
 	case "union":

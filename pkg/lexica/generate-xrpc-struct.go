@@ -77,9 +77,9 @@ func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, prope
 			}
 		case "cid-link":
 			if required {
-				fmt.Fprintf(s, "%s string `json:\"%s\"`\n", capitalize(propertyName), propertyName)
+				fmt.Fprintf(s, "%s slink.Link `json:\"%s\"`\n", capitalize(propertyName), propertyName)
 			} else {
-				fmt.Fprintf(s, "%s *string `json:\"%s,omitempty\"`\n", capitalize(propertyName), propertyName)
+				fmt.Fprintf(s, "%s *slink.Link `json:\"%s,omitempty\"`\n", capitalize(propertyName), propertyName)
 			}
 		default:
 			fmt.Fprintf(s, "// FIXME skipping unsupported property type %s %s required=%t %+v\n", propertyName, property.Type, required, property)
