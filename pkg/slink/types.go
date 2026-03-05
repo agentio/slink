@@ -1,6 +1,7 @@
 package slink
 
 import (
+	"encoding/base64"
 	"encoding/json"
 )
 
@@ -16,7 +17,24 @@ type Link struct {
 }
 
 type Bytes struct {
-	Bytes string `json:"$bytes"`
+	Bytes []byte
+}
+
+func (b Bytes) MarshalJSON() ([]byte, error) {
+	s := base64.RawStdEncoding.EncodeToString(b.Bytes)
+	v := map[string]any{
+		"$bytes": s,
+	}
+	return json.Marshal(v)
+}
+
+func (b *Bytes) UnmarsalJSON(data []byte) (err error) {
+	var v struct {
+		Bytes string `json:"$bytes"`
+	}
+	json.Unmarshal(data, &v)
+	b.Bytes, err = base64.RawStdEncoding.DecodeString(v.Bytes)
+	return
 }
 
 func LexiconTypeFromJSONBytes(data []byte) string {
