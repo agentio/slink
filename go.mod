@@ -1,6 +1,6 @@
 module github.com/agentio/slink
 
-go 1.25.1
+go 1.25.6
 
 require (
 	github.com/charmbracelet/log v0.4.2
