@@ -2,6 +2,6 @@
 # Sets SLINK_HOST and SLINK_AUTH for a pds user.
 # Usage: source $0 [HANDLE] [AUTH]
 echo "Setting SLINK_HOST to the pds of $1."
-export SLINK_HOST=$(slink resolve pds $1)
+export SLINK_HOST=$(slink resolve did $(slink resolve handle $1) --pds)
 echo "Setting SLINK_AUTH to a bearer token for $1 using the specified password."
 export SLINK_AUTH="Bearer $(slink call com.atproto.server create-session --identifier $1 --password $2 | jq .accessJwt -r)"

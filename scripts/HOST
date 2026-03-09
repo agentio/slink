@@ -2,4 +2,4 @@
 # Sets the SLINK_HOST environment variable to the PDS that hosts a specified handle.
 # Usage: source $0 [HANDLE]
 echo "Setting SLINK_HOST to pds of $1."
-export SLINK_HOST=$(slink resolve pds $1)
+export SLINK_HOST=$(slink resolve did $(slink resolve handle $1) --pds)

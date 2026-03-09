@@ -1,7 +1,6 @@
-package pds
+package handle
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/agentio/slink/pkg/resolve"
@@ -12,8 +11,8 @@ import (
 func Cmd() *cobra.Command {
 	var loglevel string
 	cmd := &cobra.Command{
-		Use:   "pds HANDLE",
-		Short: "Lookup the PDS host for a handle",
+		Use:   "handle HANDLE",
+		Short: "Resolve a handle by looking up and returning the corresponding DID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := slink.SetLogLevel(loglevel); err != nil {
@@ -23,17 +22,8 @@ func Cmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			d, err := resolve.Did(cmd.Context(), did)
-			if err != nil {
-				return err
-			}
-			for _, s := range d.Service {
-				if s.ID == "#atproto_pds" {
-					fmt.Fprintf(cmd.OutOrStdout(), "%s\n", s.ServiceEndpoint)
-					return nil
-				}
-			}
-			return errors.New("handle has no #atproto_pds service")
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", did)
+			return nil
 		},
 	}
 	cmd.Flags().StringVarP(&loglevel, "log", "l", "warn", "log level (debug, info, warn, error, fatal)")
