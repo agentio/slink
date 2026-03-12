@@ -11,7 +11,7 @@ type Blob struct {
 	Ref           Link   `json:"ref,omitempty"`
 	MimeType      string `json:"mimeType,omitempty"`
 	Size          int64  `json:"size"`
-	Cid           string `json:"cid"` // deprecated legacy blob format (see docs linked above).
+	Cid           string `json:"cid,omitempty"` // deprecated legacy blob format (see docs linked above).
 }
 
 // Link represents the Lexicon "cid-link" type (https://atproto.com/specs/data-model#link).
