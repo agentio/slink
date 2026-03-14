@@ -14,6 +14,7 @@ type Def struct {
 
 	// object
 	Required   []string            `json:"required,omitempty"`
+	Nullable   []string            `json:"nullable,omitempty"`
 	Properties map[string]Property `json:"properties,omitempty"`
 
 	// query
@@ -61,6 +62,7 @@ type Schema struct {
 	Ref        string              `json:"ref,omitempty"`
 	Refs       []string            `json:"refs,omitempty"`
 	Required   []string            `json:"required,omitempty"`
+	Nullable   []string            `json:"nullable,omitempty"`
 	Properties map[string]Property `json:"properties,omitempty"`
 }
 

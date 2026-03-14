@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-func (lexicon *Lexicon) generateStructAndDependencies(s *strings.Builder, defname, description string, properties map[string]Property, required []string, isRecord bool, name string) {
+func (lexicon *Lexicon) generateStructAndDependencies(s *strings.Builder, defname, description string, properties map[string]Property, required, nullable []string, isRecord bool, name string) {
 	if isRecord {
 		fmt.Fprintf(s, "const %s_Description = \"%s\"\n", defname, description)
 	}
-	lexicon.generateStruct(s, defname, properties, required, isRecord, name)
+	lexicon.generateStruct(s, defname, properties, required, nullable, isRecord, name)
 	lexicon.generateDependencies(s, defname, properties)
 }
 
-func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, properties map[string]Property, required []string, isRecord bool, name string) {
+func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, properties map[string]Property, required, nullable []string, isRecord bool, name string) {
 	if isRecord {
 		fmt.Fprintf(s, "// %s is a record with Lexicon type %s#%s\n", defname, lexicon.Id, name)
 	}
@@ -24,6 +24,7 @@ func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, prope
 	}
 	for _, propertyName := range sortedPropertyNames(properties) {
 		required := slices.Contains(required, propertyName)
+		nullable := slices.Contains(nullable, propertyName)
 		property := properties[propertyName]
 		switch property.Type {
 		case "boolean":
@@ -76,7 +77,7 @@ func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, prope
 				fmt.Fprintf(s, "%s any `json:\"%s,omitempty\"`\n", "BlocksCARContent", "blocksCARContent")
 			}
 		case "cid-link":
-			if required {
+			if required && !nullable {
 				fmt.Fprintf(s, "%s slink.Link `json:\"%s\"`\n", capitalize(propertyName), propertyName)
 			} else {
 				fmt.Fprintf(s, "%s *slink.Link `json:\"%s,omitempty\"`\n", capitalize(propertyName), propertyName)

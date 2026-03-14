@@ -16,7 +16,7 @@ func (lexicon *Lexicon) generateQuery(s *strings.Builder, defname string, def *D
 				fmt.Fprintf(s, "type %s = %s\n", defname+"_Output", symbolForID(parts[0])+"_"+capitalize(parts[1]))
 			}
 		} else {
-			lexicon.generateStructAndDependencies(s, defname+"_Output", "", def.Output.Schema.Properties, def.Output.Schema.Required, false, "")
+			lexicon.generateStructAndDependencies(s, defname+"_Output", "", def.Output.Schema.Properties, def.Output.Schema.Required, def.Output.Schema.Nullable, false, "")
 		}
 		params := ""
 		paramsok := false

@@ -21,11 +21,11 @@ func (lexicon *Lexicon) generateDef(s *strings.Builder, name string, def *Def) {
 	case "procedure":
 		lexicon.generateProcedure(s, defname, def)
 	case "object":
-		lexicon.generateStructAndDependencies(s, defname, def.Description, def.Properties, def.Required, true, name)
+		lexicon.generateStructAndDependencies(s, defname, def.Description, def.Properties, def.Required, def.Nullable, true, name)
 	case "string":
 		fmt.Fprintf(s, "type %s string\n", defname)
 	case "record":
-		lexicon.generateStructAndDependencies(s, defname, def.Description, def.Record.Properties, def.Record.Required, true, name)
+		lexicon.generateStructAndDependencies(s, defname, def.Description, def.Record.Properties, def.Record.Required, def.Record.Nullable, true, name)
 	case "array":
 		if def.Items.Type == "union" {
 			uniontype := defname + "_Elem"
