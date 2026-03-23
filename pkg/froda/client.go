@@ -15,6 +15,8 @@ import (
 	"github.com/coder/websocket"
 )
 
+const frodaUserAgent = "froda (https://pkg.go.dev/github.com/agentio/slink/pkg/froda)"
+
 // Client contains configurable settings for the client.
 type Client struct {
 	Host          string
@@ -22,6 +24,7 @@ type Client struct {
 	ATProtoProxy  string
 	ProxySession  string
 	UserDid       string
+	UserAgent     string
 }
 
 // NewClient creates a new client that can be configured directly or with environment variables.
@@ -50,6 +53,7 @@ type ClientOptions struct {
 	ATProtoProxy  string
 	ProxySession  string
 	UserDid       string
+	UserAgent     string
 }
 
 // NewClientWithOptions creates a client using a user-specified set of options.
@@ -60,6 +64,7 @@ func NewClientWithOptions(options ClientOptions) *Client {
 		ATProtoProxy:  options.ATProtoProxy,
 		ProxySession:  options.ProxySession,
 		UserDid:       options.UserDid,
+		UserAgent:     options.UserAgent,
 	}
 }
 
@@ -85,7 +90,6 @@ func (c *Client) Do(
 			body = bytes.NewReader(b)
 		}
 	}
-
 	var m string
 	switch kind {
 	case slink.Query:
@@ -95,12 +99,10 @@ func (c *Client) Do(
 	default:
 		return fmt.Errorf("unsupported request kind: %d", kind)
 	}
-
 	var paramStr string
 	if len(params) > 0 {
 		paramStr = "?" + makeParams(params)
 	}
-
 	host := c.Host
 	if strings.HasPrefix(host, "unix:") {
 		host = "http://unix"
@@ -111,87 +113,40 @@ func (c *Client) Do(
 	if err != nil {
 		return err
 	}
-
+	c.applyHeaders(req)
 	if bodyvalue != nil && contentType != "" {
 		req.Header.Set("Content-Type", contentType)
 	}
-	req.Header.Set("User-Agent", "froda (https://pkg.go.dev/github.com/agentio/slink/pkg/froda)")
-
-	authorization := c.Authorization
-	if authorization == "" {
-		authorization = os.Getenv("SLINK_AUTH")
-	}
-	if authorization != "" {
-		req.Header.Set("authorization", authorization)
-		log.Infof("authorization: %s", slink.TruncateToLength(authorization, 16))
-	}
-
-	atprotoproxy := c.ATProtoProxy
-	if atprotoproxy == "" {
-		atprotoproxy = os.Getenv("SLINK_ATPROTOPROXY")
-	}
-	if atprotoproxy != "" {
-		req.Header.Set("atproto-proxy", atprotoproxy)
-		log.Infof("atproto-proxy: %s", atprotoproxy)
-	}
-
-	proxysession := c.ProxySession
-	if proxysession == "" {
-		proxysession = os.Getenv("SLINK_PROXYSESSION")
-	}
-	if proxysession != "" {
-		req.Header.Set("proxy-session", proxysession)
-		log.Infof("proxy-session: %s", proxysession)
-	}
-
-	userdid := c.UserDid
-	if userdid == "" {
-		userdid = os.Getenv("SLINK_USERDID")
-	}
-	if userdid != "" {
-		req.Header.Set("user-did", userdid)
-		log.Infof("user-did: %s", userdid)
-	}
-
 	client := newHTTPClient(httpClientOptions{
 		Address: c.Host,
 	})
-
 	resp, err := client.HttpClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-
 	defer resp.Body.Close()
-
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-
 	log.Infof("%d (%d bytes)", resp.StatusCode, len(b))
 	if strings.HasPrefix(resp.Header.Get("Content-Type"), "application/json") {
 		log.Debugf("%s", string(b))
 	}
-
 	if resp.StatusCode != 200 {
 		return xrpcErrorFromResponse(resp, b)
 	}
-
 	if out == nil {
 		return nil
 	}
-
 	if outBytesPointer, ok := out.(*[]byte); ok {
 		*outBytesPointer = b
 		return nil
 	}
-
 	responseContentType := resp.Header.Get("Content-Type")
 	if !strings.HasPrefix(responseContentType, "application/json") {
 		return fmt.Errorf("unexpected content type: %s", responseContentType)
 	}
-
 	if err := json.Unmarshal(b, out); err != nil {
 		return fmt.Errorf("decoding xrpc response: %w", err)
 	}
@@ -218,45 +173,7 @@ func (c *Client) Subscribe(
 	if err != nil {
 		return err
 	}
-
-	req.Header.Set("User-Agent", "froda (https://pkg.go.dev/github.com/agentio/slink/pkg/froda)")
-
-	authorization := c.Authorization
-	if authorization == "" {
-		authorization = os.Getenv("SLINK_AUTH")
-	}
-	if authorization != "" {
-		req.Header.Set("authorization", authorization)
-		log.Infof("authorization: %s", slink.TruncateToLength(authorization, 16))
-	}
-
-	atprotoproxy := c.ATProtoProxy
-	if atprotoproxy == "" {
-		atprotoproxy = os.Getenv("SLINK_ATPROTOPROXY")
-	}
-	if atprotoproxy != "" {
-		req.Header.Set("atproto-proxy", atprotoproxy)
-		log.Infof("atproto-proxy: %s", atprotoproxy)
-	}
-
-	proxysession := c.ProxySession
-	if proxysession == "" {
-		proxysession = os.Getenv("SLINK_PROXYSESSION")
-	}
-	if proxysession != "" {
-		req.Header.Set("proxy-session", proxysession)
-		log.Infof("proxy-session: %s", proxysession)
-	}
-
-	userdid := c.UserDid
-	if userdid == "" {
-		userdid = os.Getenv("SLINK_USERDID")
-	}
-	if userdid != "" {
-		req.Header.Set("user-did", userdid)
-		log.Infof("user-did: %s", userdid)
-	}
-
+	c.applyHeaders(req)
 	wshost := strings.Replace(c.Host, "https://", "wss://", 1)
 	wshost = strings.Replace(wshost, "http://", "ws://", 1)
 	wshost += "/xrpc/" + method + paramStr
@@ -278,5 +195,50 @@ func (c *Client) Subscribe(
 			return err
 		}
 		callback(&b)
+	}
+}
+
+func (c *Client) applyHeaders(req *http.Request) {
+	// Always set user-agent.
+	useragent := c.UserAgent
+	if useragent == "" {
+		useragent = frodaUserAgent
+	}
+	req.Header.Set("User-Agent", useragent)
+	// Set authorization if provided.
+	authorization := c.Authorization
+	if authorization == "" {
+		authorization = os.Getenv("SLINK_AUTH")
+	}
+	if authorization != "" {
+		req.Header.Set("authorization", authorization)
+		log.Infof("authorization: %s", slink.TruncateToLength(authorization, 16))
+	}
+	// Set atprotoproxy if provided.
+	atprotoproxy := c.ATProtoProxy
+	if atprotoproxy == "" {
+		atprotoproxy = os.Getenv("SLINK_ATPROTOPROXY")
+	}
+	if atprotoproxy != "" {
+		req.Header.Set("atproto-proxy", atprotoproxy)
+		log.Infof("atproto-proxy: %s", atprotoproxy)
+	}
+	// Set proxy-session if provided.
+	proxysession := c.ProxySession
+	if proxysession == "" {
+		proxysession = os.Getenv("SLINK_PROXYSESSION")
+	}
+	if proxysession != "" {
+		req.Header.Set("proxy-session", proxysession)
+		log.Infof("proxy-session: %s", proxysession)
+	}
+	// Set user-did if provided.
+	userdid := c.UserDid
+	if userdid == "" {
+		userdid = os.Getenv("SLINK_USERDID")
+	}
+	if userdid != "" {
+		req.Header.Set("user-did", userdid)
+		log.Infof("user-did: %s", userdid)
 	}
 }
