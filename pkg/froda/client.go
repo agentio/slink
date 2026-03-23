@@ -260,7 +260,9 @@ func (c *Client) Subscribe(
 	wshost := strings.Replace(c.Host, "https://", "wss://", 1)
 	wshost = strings.Replace(wshost, "http://", "ws://", 1)
 	wshost += "/xrpc/" + method + paramStr
-	conn, _, err := websocket.Dial(ctx, wshost, nil)
+	conn, _, err := websocket.Dial(ctx, wshost, &websocket.DialOptions{
+		HTTPHeader: req.Header,
+	})
 	if err != nil {
 		return err
 	}
