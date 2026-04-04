@@ -1,9 +1,9 @@
 package did
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/agentio/slink/pkg/pretty"
 	"github.com/agentio/slink/pkg/resolve"
 	"github.com/agentio/slink/pkg/slink"
 	"github.com/spf13/cobra"
@@ -20,16 +20,11 @@ func Cmd() *cobra.Command {
 			if err := slink.SetLogLevel(loglevel); err != nil {
 				return err
 			}
-			b, err := resolve.DidBytes(cmd.Context(), args[0])
+			didDocument, err := resolve.Did(cmd.Context(), args[0])
 			if err != nil {
 				return err
 			}
 			if pds {
-				var didDocument resolve.DidDocument
-				err = json.Unmarshal(b, &didDocument)
-				if err != nil {
-					return err
-				}
 				for _, s := range didDocument.Service {
 					if s.ID == "#atproto_pds" {
 						fmt.Fprintf(cmd.OutOrStdout(), "%s\n", s.ServiceEndpoint)
@@ -37,7 +32,7 @@ func Cmd() *cobra.Command {
 					}
 				}
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(b))
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(didDocument))
 			return nil
 		},
 	}
