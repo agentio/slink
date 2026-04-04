@@ -198,7 +198,7 @@ Copyright 2026, Agent IO (Tim Burks).
 
 ## License
 
-`slink` is released under the [AGPL](https://www.gnu.org/licenses/agpl-3.0.html). 
+`slink` is released under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 
 ## Warning!
 
