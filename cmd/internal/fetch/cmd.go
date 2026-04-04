@@ -36,11 +36,24 @@ func Cmd() *cobra.Command {
 				}
 				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(response))
 			} else {
-				didDoc, err := resolve.Did(cmd.Context(), aturi.Authority)
+				pdsurl, err := aturi.ATProtoPDSURL()
+				if err != nil {
+					// if we can't find a PDS URL, just return the DID doc.
+					didDoc, err := resolve.Did(cmd.Context(), aturi.Authority)
+					if err != nil {
+						return err
+					}
+					fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(didDoc))
+				}
+				// otherwise, return the output of com.atproto.repo.describeRepo
+				c := froda.NewClientWithOptions(froda.ClientOptions{
+					Host: pdsurl,
+				})
+				response, err := xrpc.ComATProtoRepoDescribeRepo(cmd.Context(), c, aturi.Authority)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(didDoc))
+				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(response))
 			}
 			return nil
 		},
