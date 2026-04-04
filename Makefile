@@ -1,4 +1,4 @@
-all:	bootstrap slink
+all:	submodules bootstrap slink
 
 bootstrap:	
 	go run ./cmd/slink-generate lint

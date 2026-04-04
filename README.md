@@ -8,10 +8,7 @@
 
 ## Installing slink
 
-To install `slink` on any system with Go installed:
-1. clone the repo.
-2. copy the [lexicons](https://github.com/bluesky-social/atproto/tree/main/lexicons) directory to the root of the repo.
-3. run `make all`. This will generate XRPC command handlers and a CLI in the `gen` directory. It then builds everything to create `slink`.
+To install `slink` on any system with Go installed, just run `make all` from the root of this repo. That will update the `lexicons` directory (a git submodule) and then generate XRPC command handlers and a CLI in the `gen` directory. It then builds everything to create `slink`.
 
 ## Using slink
 
