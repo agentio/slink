@@ -18,6 +18,10 @@ func ATUriFromString(s string) (*ATURI, error) {
 	if err == nil {
 		return a, nil
 	}
+	a, err = collectionATUriFromString(s)
+	if err == nil {
+		return a, nil
+	}
 	a, err = authorityATUriFromString(s)
 	if err == nil {
 		return a, nil
@@ -38,6 +42,20 @@ func recordATUriFromString(s string) (*ATURI, error) {
 		Authority:  authority,
 		Collection: collection,
 		RKey:       rkey,
+	}, nil
+}
+
+func collectionATUriFromString(s string) (*ATURI, error) {
+	re := regexp.MustCompile(`^at://([a-zA-Z0-9._:-]+)/([a-zA-Z0-9.-]+)$`)
+	m := re.FindStringSubmatch(s)
+	if m == nil {
+		return nil, errors.New("invalid at:// record uri")
+	}
+	authority := m[1]
+	collection := m[2]
+	return &ATURI{
+		Authority:  authority,
+		Collection: collection,
 	}, nil
 }
 

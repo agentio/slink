@@ -14,6 +14,9 @@ import (
 
 func Cmd() *cobra.Command {
 	var loglevel string
+	var cursor string
+	var limit int64
+	var reverse bool
 	cmd := &cobra.Command{
 		Use:   "fetch ATURI",
 		Short: "Fetch the document associated with an AT URI.",
@@ -29,8 +32,26 @@ func Cmd() *cobra.Command {
 			if err = aturi.ResolveAuthority(); err != nil {
 				return err
 			}
-			if aturi.Collection != "" {
+			if aturi.RKey != "" {
 				response, err := FetchRecord(cmd.Context(), aturi)
+				if err != nil {
+					return err
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(response))
+			} else if aturi.Collection != "" {
+				pdsurl, err := aturi.ATProtoPDSURL()
+				if err != nil {
+					return err
+				}
+				c := froda.NewClientWithOptions(froda.ClientOptions{
+					Host: pdsurl,
+				})
+				response, err := xrpc.ComATProtoRepoListRecords(cmd.Context(), c,
+					aturi.Collection,
+					cursor,
+					limit,
+					aturi.Authority,
+					reverse)
 				if err != nil {
 					return err
 				}
@@ -59,6 +80,9 @@ func Cmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&loglevel, "log", "l", "warn", "log level (debug, info, warn, error, fatal)")
+	cmd.Flags().StringVar(&cursor, "cursor", "", "cursor to use when listing records")
+	cmd.Flags().Int64Var(&limit, "limit", 20, "number of records to return in lists")
+	cmd.Flags().BoolVar(&reverse, "reverse", false, "reverse list order when listing records")
 	return cmd
 }
 
