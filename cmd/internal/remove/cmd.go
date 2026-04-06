@@ -1,7 +1,8 @@
-package fetch
+package remove
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/agentio/slink/gen/xrpc"
@@ -18,8 +19,8 @@ func Cmd() *cobra.Command {
 	var limit int64
 	var reverse bool
 	cmd := &cobra.Command{
-		Use:   "fetch ATURI",
-		Short: "Fetch the document associated with an AT URI.",
+		Use:   "remove ATURI",
+		Short: "Remove documents matching an AT URI.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := slink.SetLogLevel(loglevel); err != nil {
@@ -33,12 +34,14 @@ func Cmd() *cobra.Command {
 				return err
 			}
 			if aturi.RKey != "" {
-				response, err := fetchRecord(cmd.Context(), aturi)
+				// Remove a specified record.
+				response, err := deleteRecord(cmd.Context(), aturi)
 				if err != nil {
 					return err
 				}
 				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(response))
 			} else if aturi.Collection != "" {
+				// Remove all records that are returned by listing a collection with the flags below.
 				pdsurl, err := aturi.ATProtoPDSURL()
 				if err != nil {
 					return err
@@ -56,25 +59,19 @@ func Cmd() *cobra.Command {
 					return err
 				}
 				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(response))
-			} else {
-				pdsurl, err := aturi.ATProtoPDSURL()
-				if err != nil {
-					// if we can't find a PDS URL, just return the DID doc.
-					didDoc, err := resolve.Did(cmd.Context(), aturi.Authority)
+				for _, record := range response.Records {
+					record_aturi, err := resolve.ATUriFromString(record.Uri)
 					if err != nil {
 						return err
 					}
-					fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(didDoc))
+					response, err := deleteRecord(cmd.Context(), record_aturi)
+					if err != nil {
+						return err
+					}
+					fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(response))
 				}
-				// otherwise, return the output of com.atproto.repo.describeRepo
-				c := froda.NewClientWithOptions(froda.ClientOptions{
-					Host: pdsurl,
-				})
-				response, err := xrpc.ComATProtoRepoDescribeRepo(cmd.Context(), c, aturi.Authority)
-				if err != nil {
-					return err
-				}
-				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", pretty.JSONValue(response))
+			} else {
+				return errors.New("this tool is unable to remove an account")
 			}
 			return nil
 		},
@@ -86,7 +83,7 @@ func Cmd() *cobra.Command {
 	return cmd
 }
 
-func fetchRecord(ctx context.Context, aturi *resolve.ATURI) (*xrpc.ComATProtoRepoGetRecord_Output, error) {
+func deleteRecord(ctx context.Context, aturi *resolve.ATURI) (*xrpc.ComATProtoRepoDeleteRecord_Output, error) {
 	pdsurl, err := aturi.ATProtoPDSURL()
 	if err != nil {
 		return nil, err
@@ -94,5 +91,9 @@ func fetchRecord(ctx context.Context, aturi *resolve.ATURI) (*xrpc.ComATProtoRep
 	c := froda.NewClientWithOptions(froda.ClientOptions{
 		Host: pdsurl,
 	})
-	return xrpc.ComATProtoRepoGetRecord(ctx, c, "", aturi.Collection, aturi.Authority, aturi.RKey)
+	return xrpc.ComATProtoRepoDeleteRecord(ctx, c, &xrpc.ComATProtoRepoDeleteRecord_Input{
+		Collection: aturi.Collection,
+		Repo:       aturi.Authority,
+		Rkey:       aturi.RKey,
+	})
 }
