@@ -108,7 +108,7 @@ func (c *Client) Do(
 		host = "http://unix"
 	}
 	path := host + "/xrpc/" + method + paramStr
-	log.Infof("%s %s", m, path)
+	log.Debugf("%s %s", m, path)
 	req, err := http.NewRequest(m, path, body)
 	if err != nil {
 		return err
@@ -129,10 +129,7 @@ func (c *Client) Do(
 	if err != nil {
 		return err
 	}
-	log.Infof("%d (%d bytes)", resp.StatusCode, len(b))
-	if strings.HasPrefix(resp.Header.Get("Content-Type"), "application/json") {
-		log.Debugf("%s", string(b))
-	}
+	log.Debugf("%d (%d bytes)", resp.StatusCode, len(b))
 	if resp.StatusCode != 200 {
 		return xrpcErrorFromResponse(resp, b)
 	}
@@ -212,7 +209,7 @@ func (c *Client) applyHeaders(req *http.Request) {
 	}
 	if authorization != "" {
 		req.Header.Set("authorization", authorization)
-		log.Infof("authorization: %s", slink.TruncateToLength(authorization, 16))
+		log.Debugf("authorization: %s", slink.TruncateToLength(authorization, 16))
 	}
 	// Set atprotoproxy if provided.
 	atprotoproxy := c.ATProtoProxy
@@ -221,7 +218,7 @@ func (c *Client) applyHeaders(req *http.Request) {
 	}
 	if atprotoproxy != "" {
 		req.Header.Set("atproto-proxy", atprotoproxy)
-		log.Infof("atproto-proxy: %s", atprotoproxy)
+		log.Debugf("atproto-proxy: %s", atprotoproxy)
 	}
 	// Set proxy-session if provided.
 	proxysession := c.ProxySession
@@ -230,7 +227,7 @@ func (c *Client) applyHeaders(req *http.Request) {
 	}
 	if proxysession != "" {
 		req.Header.Set("proxy-session", proxysession)
-		log.Infof("proxy-session: %s", proxysession)
+		log.Debugf("proxy-session: %s", proxysession)
 	}
 	// Set user-did if provided.
 	userdid := c.UserDid
@@ -239,6 +236,6 @@ func (c *Client) applyHeaders(req *http.Request) {
 	}
 	if userdid != "" {
 		req.Header.Set("user-did", userdid)
-		log.Infof("user-did: %s", userdid)
+		log.Debugf("user-did: %s", userdid)
 	}
 }
