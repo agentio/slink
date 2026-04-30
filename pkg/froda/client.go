@@ -10,8 +10,8 @@ import (
 	"os"
 	"strings"
 
+	"charm.land/log/v2"
 	"github.com/agentio/slink/pkg/slink"
-	"github.com/charmbracelet/log"
 	"github.com/coder/websocket"
 )
 

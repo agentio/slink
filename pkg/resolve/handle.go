@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 )
 
 func Handle(ctx context.Context, handle string) (string, error) {

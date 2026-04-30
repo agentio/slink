@@ -1,6 +1,6 @@
 package slink
 
-import "github.com/charmbracelet/log"
+import "charm.land/log/v2"
 
 func SetLogLevel(level string) error {
 	var err error

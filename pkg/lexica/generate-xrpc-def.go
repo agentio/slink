@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 )
 
 func (lexicon *Lexicon) generateDef(s *strings.Builder, name string, def *Def) {
