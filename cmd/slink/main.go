@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"charm.land/log/v2"
 	"github.com/agentio/slink/cmd/internal/fetch"
 	"github.com/agentio/slink/cmd/internal/generate"
 	"github.com/agentio/slink/cmd/internal/remove"
@@ -22,6 +23,7 @@ func main() {
 }
 
 func cmd() *cobra.Command {
+	var logLevel string
 	cmd := &cobra.Command{
 		Use: "slink",
 		Long: strings.Join(
@@ -38,6 +40,15 @@ func cmd() *cobra.Command {
 				`  SLINK_PROXYSESSION sets the proxy-session header (used by IO).`,
 				`  SLINK_USERDID sets the user-did header (used by IO).`,
 			}, "\n"),
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+			ll, err := log.ParseLevel(logLevel)
+			if err != nil {
+				return err
+			}
+			log.SetLevel(ll)
+			return nil
+		},
 	}
 	cmd.AddCommand(call.Cmd())
 	cmd.AddCommand(check.Cmd())
@@ -46,5 +57,6 @@ func cmd() *cobra.Command {
 	cmd.AddCommand(remove.Cmd())
 	cmd.AddCommand(resolve.Cmd())
 	cmd.AddCommand(token.Cmd())
+	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", "info", "log level (debug, info, warn, error, fatal)")
 	return cmd
 }
