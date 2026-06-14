@@ -8,12 +8,10 @@ import (
 	"github.com/agentio/slink/pkg/froda"
 	"github.com/agentio/slink/pkg/pretty"
 	"github.com/agentio/slink/pkg/resolve"
-	"github.com/agentio/slink/pkg/slink"
 	"github.com/spf13/cobra"
 )
 
 func Cmd() *cobra.Command {
-	var loglevel string
 	var cursor string
 	var limit int64
 	var reverse bool
@@ -22,9 +20,6 @@ func Cmd() *cobra.Command {
 		Short: "Fetch the document associated with an AT URI.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := slink.SetLogLevel(loglevel); err != nil {
-				return err
-			}
 			aturi, err := resolve.ATUriFromString(args[0])
 			if err != nil {
 				return err
@@ -79,7 +74,6 @@ func Cmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&loglevel, "log", "l", "warn", "log level (debug, info, warn, error, fatal)")
 	cmd.Flags().StringVar(&cursor, "cursor", "", "cursor to use when listing records")
 	cmd.Flags().Int64Var(&limit, "limit", 20, "number of records to return in lists")
 	cmd.Flags().BoolVar(&reverse, "reverse", false, "reverse list order when listing records")

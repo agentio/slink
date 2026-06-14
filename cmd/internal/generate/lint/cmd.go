@@ -2,20 +2,15 @@ package lint
 
 import (
 	"github.com/agentio/slink/pkg/lexica"
-	"github.com/agentio/slink/pkg/slink"
 	"github.com/spf13/cobra"
 )
 
 func Cmd() *cobra.Command {
 	var inputs []string
-	var _loglevel string
 	var cmd = &cobra.Command{
 		Use:   "lint",
 		Short: "Check a directory of Lexicon files for possible problems",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := slink.SetLogLevel(_loglevel); err != nil {
-				return err
-			}
 			catalog := lexica.NewCatalog()
 			for _, input := range inputs {
 				if err := catalog.Load(input, false /* skip lint */); err != nil {
@@ -26,6 +21,5 @@ func Cmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringArrayVarP(&inputs, "input", "i", []string{"lexicons"}, "input directory")
-	cmd.Flags().StringVarP(&_loglevel, "log", "l", "warn", "log level (debug, info, warn, error, fatal)")
 	return cmd
 }

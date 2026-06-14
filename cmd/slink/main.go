@@ -57,6 +57,6 @@ func cmd() *cobra.Command {
 	cmd.AddCommand(remove.Cmd())
 	cmd.AddCommand(resolve.Cmd())
 	cmd.AddCommand(token.Cmd())
-	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", "info", "log level (debug, info, warn, error, fatal)")
+	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", "warn", "log level (debug, info, warn, error, fatal)")
 	return cmd
 }
