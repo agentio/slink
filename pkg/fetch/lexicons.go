@@ -2,7 +2,6 @@ package fetch
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +9,7 @@ import (
 	"charm.land/log/v2"
 	"github.com/agentio/slink/gen/xrpc"
 	"github.com/agentio/slink/pkg/froda"
+	"github.com/agentio/slink/pkg/pretty"
 	"github.com/agentio/slink/pkg/resolve"
 )
 
@@ -46,11 +46,7 @@ func FetchLexicons(ctx context.Context, handle, dir string) error {
 			if err != nil {
 				return err
 			}
-			b, err := json.Marshal(value)
-			if err != nil {
-				return err
-			}
-			err = os.WriteFile(path, b, 0644)
+			err = os.WriteFile(path, []byte(pretty.JSONValue(value)), 0644)
 			if err != nil {
 				return err
 			}
