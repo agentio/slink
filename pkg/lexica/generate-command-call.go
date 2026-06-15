@@ -72,7 +72,6 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 	fmt.Fprintf(s, "import \"github.com/agentio/slink/pkg/slink\"\n")
 	fmt.Fprintf(s, "import \"github.com/agentio/slink/gen/xrpc\"\n")
 	fmt.Fprintf(s, "func Cmd() *cobra.Command {\n")
-	fmt.Fprintf(s, "var _loglevel string\n")
 	fmt.Fprintf(s, "var _output string\n")
 	if def.Type == "query" && def.Parameters != nil {
 		for _, propertyName := range sortedPropertyNames(def.Parameters.Properties) {
@@ -123,7 +122,6 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 	fmt.Fprintf(s, "Long: xrpc.%s_Description,\n", handlerName)
 	fmt.Fprintf(s, "Args: cobra.NoArgs,\n")
 	fmt.Fprintf(s, "RunE: func(cmd *cobra.Command, args []string) error {\n")
-	fmt.Fprintf(s, "if err := slink.SetLogLevel(_loglevel); err != nil {return err}\n")
 	if def.Type == "query" {
 		fmt.Fprintf(s, "client := froda.NewClient()\n")
 		fmt.Fprintf(s, "response, err := xrpc.%s(\n", handlerName)
@@ -250,7 +248,6 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 	}
 	fmt.Fprintf(s, "},\n")
 	fmt.Fprintf(s, "}\n")
-	fmt.Fprintf(s, "cmd.Flags().StringVarP(&_loglevel, \"log\", \"l\", \"warn\", \"log level (debug, info, warn, error, fatal)\")\n")
 	fmt.Fprintf(s, "cmd.Flags().StringVarP(&_output, \"output\", \"o\", \"\", \"output destination\")\n")
 	if def.Type == "query" && def.Parameters != nil {
 		for _, propertyName := range sortedPropertyNames(def.Parameters.Properties) {
