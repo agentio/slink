@@ -29,7 +29,7 @@ func (lexicon *Lexicon) generateQuery(s *strings.Builder, defname string, def *D
 		fmt.Fprintf(s, "params := map[string]any{\n")
 		if paramsok {
 			for _, parameterName := range sortedPropertyNames(def.Parameters.Properties) {
-				fmt.Fprintf(s, "\"%s\":%s,\n", parameterName, parameterName)
+				fmt.Fprintf(s, "\"%s\":%s,\n", parameterName, sanitize(parameterName))
 			}
 		}
 		fmt.Fprintf(s, "}\n")
@@ -50,7 +50,7 @@ func (lexicon *Lexicon) generateQuery(s *strings.Builder, defname string, def *D
 		fmt.Fprintf(s, "params := map[string]any{\n")
 		if paramsok {
 			for _, parameterName := range sortedPropertyNames(def.Parameters.Properties) {
-				fmt.Fprintf(s, "\"%s\":%s,\n", parameterName, parameterName)
+				fmt.Fprintf(s, "\"%s\":%s,\n", parameterName, sanitize(parameterName))
 			}
 		}
 		fmt.Fprintf(s, "}\n")
@@ -70,7 +70,7 @@ func parseQueryParameters(parameters *Parameters) (string, bool) {
 	propertyNames := sortedPropertyNames(parameters.Properties)
 	for _, propertyName := range propertyNames {
 		propertyValue := parameters.Properties[propertyName]
-		declaration := propertyName + " "
+		declaration := sanitize(propertyName) + " "
 		switch propertyValue.Type {
 		case "integer":
 			declaration += "int64"
@@ -90,4 +90,11 @@ func parseQueryParameters(parameters *Parameters) (string, bool) {
 		parms = append(parms, declaration)
 	}
 	return ", " + strings.Join(parms, ", "), true
+}
+
+func sanitize(n string) string {
+	if n == "type" {
+		return "type_"
+	}
+	return n
 }

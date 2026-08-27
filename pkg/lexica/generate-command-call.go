@@ -75,44 +75,46 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 	fmt.Fprintf(s, "var _output string\n")
 	if def.Type == "query" && def.Parameters != nil {
 		for _, propertyName := range sortedPropertyNames(def.Parameters.Properties) {
+			propertyVariable := sanitize(propertyName)
 			propertyValue := def.Parameters.Properties[propertyName]
 			switch propertyValue.Type {
 			case "string":
-				fmt.Fprintf(s, "var %s string\n", propertyName)
+				fmt.Fprintf(s, "var %s string\n", propertyVariable)
 			case "integer":
-				fmt.Fprintf(s, "var %s int64\n", propertyName)
+				fmt.Fprintf(s, "var %s int64\n", propertyVariable)
 			case "boolean":
-				fmt.Fprintf(s, "var %s bool\n", propertyName)
+				fmt.Fprintf(s, "var %s bool\n", propertyVariable)
 			case "array":
 				if propertyValue.Items.Type == "string" {
-					fmt.Fprintf(s, "var %s []string\n", propertyName)
+					fmt.Fprintf(s, "var %s []string\n", propertyVariable)
 				} else {
-					fmt.Fprintf(s, "// FIXME var %s %+v\n", propertyName, propertyValue)
+					fmt.Fprintf(s, "// FIXME var %s %+v\n", propertyVariable, propertyValue)
 				}
 			default:
-				fmt.Fprintf(s, "// FIXME var %s %+v\n", propertyName, propertyValue)
+				fmt.Fprintf(s, "// FIXME var %s %+v\n", propertyVariable, propertyValue)
 			}
 		}
 	} else if def.Type == "procedure" && def.Input != nil {
 		for _, propertyName := range sortedPropertyNames(def.Input.Schema.Properties) {
+			propertyVariable := sanitize(propertyName)
 			propertyValue := def.Input.Schema.Properties[propertyName]
 			switch propertyValue.Type {
 			case "string":
-				fmt.Fprintf(s, "var %s string\n", propertyName)
+				fmt.Fprintf(s, "var %s string\n", propertyVariable)
 			case "integer":
-				fmt.Fprintf(s, "var %s int64\n", propertyName)
+				fmt.Fprintf(s, "var %s int64\n", propertyVariable)
 			case "boolean":
-				fmt.Fprintf(s, "var %s bool\n", propertyName)
+				fmt.Fprintf(s, "var %s bool\n", propertyVariable)
 			case "array":
 				if propertyValue.Items.Type == "string" {
-					fmt.Fprintf(s, "var %s []string\n", propertyName)
+					fmt.Fprintf(s, "var %s []string\n", propertyVariable)
 				} else {
-					fmt.Fprintf(s, "var %s string // (this should be a filename)\n", propertyName)
+					fmt.Fprintf(s, "var %s string // (this should be a filename)\n", propertyVariable)
 				}
 			case "unknown", "ref", "union":
-				fmt.Fprintf(s, "var %s string // (this should be a filename)\n", propertyName)
+				fmt.Fprintf(s, "var %s string // (this should be a filename)\n", propertyVariable)
 			default:
-				fmt.Fprintf(s, "// FIXME var %s %+v\n", propertyName, propertyValue)
+				fmt.Fprintf(s, "// FIXME var %s %+v\n", propertyVariable, propertyValue)
 			}
 		}
 	}
@@ -129,17 +131,18 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 		fmt.Fprintf(s, "client,\n")
 		if def.Parameters != nil {
 			for _, propertyName := range sortedPropertyNames(def.Parameters.Properties) {
+				propertyVariable := sanitize(propertyName)
 				propertyValue := def.Parameters.Properties[propertyName]
 				switch propertyValue.Type {
 				case "string":
-					fmt.Fprintf(s, "%s,\n", propertyName)
+					fmt.Fprintf(s, "%s,\n", propertyVariable)
 				case "integer":
-					fmt.Fprintf(s, "%s,\n", propertyName)
+					fmt.Fprintf(s, "%s,\n", propertyVariable)
 				case "boolean":
-					fmt.Fprintf(s, "%s,\n", propertyName)
+					fmt.Fprintf(s, "%s,\n", propertyVariable)
 				case "array":
 					if propertyValue.Items.Type == "string" {
-						fmt.Fprintf(s, "%s,\n", propertyName)
+						fmt.Fprintf(s, "%s,\n", propertyVariable)
 					}
 				default:
 				}
@@ -175,35 +178,36 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 		if def.Input != nil {
 			fmt.Fprintf(s, "&xrpc.%s_Input{\n", handlerName)
 			for _, propertyName := range sortedPropertyNames(def.Input.Schema.Properties) {
+				propertyVariable := sanitize(propertyName)
 				propertyValue := def.Input.Schema.Properties[propertyName]
 				switch propertyValue.Type {
 				case "string":
 					if !slices.Contains(def.Input.Schema.Required, propertyName) {
-						fmt.Fprintf(s, "%s: slink.CastStringToPointer(%s),\n", capitalize(propertyName), propertyName)
+						fmt.Fprintf(s, "%s: slink.CastStringToPointer(%s),\n", capitalize(propertyName), propertyVariable)
 					} else {
-						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyName)
+						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyVariable)
 					}
 				case "integer":
 					if !slices.Contains(def.Input.Schema.Required, propertyName) {
-						fmt.Fprintf(s, "%s: slink.CastInt64ToPointer(%s),\n", capitalize(propertyName), propertyName)
+						fmt.Fprintf(s, "%s: slink.CastInt64ToPointer(%s),\n", capitalize(propertyName), propertyVariable)
 					} else {
-						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyName)
+						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyVariable)
 					}
 				case "boolean":
 					if !slices.Contains(def.Input.Schema.Required, propertyName) {
-						fmt.Fprintf(s, "%s: slink.CastBoolToPointer(%s),\n", capitalize(propertyName), propertyName)
+						fmt.Fprintf(s, "%s: slink.CastBoolToPointer(%s),\n", capitalize(propertyName), propertyVariable)
 					} else {
-						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyName)
+						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyVariable)
 					}
 				case "array":
 					if propertyValue.Items.Type == "string" {
-						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyName)
+						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyVariable)
 					} else {
 						itemstype := lexicon.resolveItemsType(defname+"_Input", propertyName, propertyValue.Items)
 						fmt.Fprintf(s, "%s: slink.CastAnyToArray[xrpc.%s](%s_value),\n", capitalize(propertyName), itemstype[1:], propertyName)
 					}
 				case "unknown":
-					fmt.Fprintf(s, "%s: %s_value,\n", capitalize(propertyName), propertyName)
+					fmt.Fprintf(s, "%s: %s_value,\n", capitalize(propertyName), propertyVariable)
 				case "ref":
 					reftype := lexicon.resolveRefType(propertyValue.Ref)
 					if reftype[0] == '*' {
@@ -251,48 +255,50 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 	fmt.Fprintf(s, "cmd.Flags().StringVarP(&_output, \"output\", \"o\", \"\", \"output destination\")\n")
 	if def.Type == "query" && def.Parameters != nil {
 		for _, propertyName := range sortedPropertyNames(def.Parameters.Properties) {
+			propertyVariable := sanitize(propertyName)
 			propertyValue := def.Parameters.Properties[propertyName]
 			flagName := strcase.ToKebab(propertyName)
 			description := propertyName
 			switch propertyValue.Type {
 			case "string":
-				fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s\")\n", propertyName, flagName, description)
+				fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s\")\n", propertyVariable, flagName, description)
 			case "integer":
-				fmt.Fprintf(s, "cmd.Flags().Int64Var(&%s, \"%s\", %d, \"%s\")\n", propertyName, flagName, int64Value(propertyValue.Default), description)
+				fmt.Fprintf(s, "cmd.Flags().Int64Var(&%s, \"%s\", %d, \"%s\")\n", propertyVariable, flagName, int64Value(propertyValue.Default), description)
 			case "boolean":
-				fmt.Fprintf(s, "cmd.Flags().BoolVar(&%s, \"%s\", %t, \"%s\")\n", propertyName, flagName, boolValue(propertyValue.Default), description)
+				fmt.Fprintf(s, "cmd.Flags().BoolVar(&%s, \"%s\", %t, \"%s\")\n", propertyVariable, flagName, boolValue(propertyValue.Default), description)
 			case "array":
 				if propertyValue.Items.Type == "string" {
-					fmt.Fprintf(s, "cmd.Flags().StringArrayVar(&%s, \"%s\", nil, \"%s\")\n", propertyName, flagName, description)
+					fmt.Fprintf(s, "cmd.Flags().StringArrayVar(&%s, \"%s\", nil, \"%s\")\n", propertyVariable, flagName, description)
 				} else {
-					fmt.Fprintf(s, "// FIXME cmd.Flags().XXXVar(&%s... %+v\n", propertyName, propertyValue)
+					fmt.Fprintf(s, "// FIXME cmd.Flags().XXXVar(&%s... %+v\n", propertyVariable, propertyValue)
 				}
 			default:
-				fmt.Fprintf(s, "// FIXME cmd.Flags().XXXVar(&%s... %+v\n", propertyName, propertyValue)
+				fmt.Fprintf(s, "// FIXME cmd.Flags().XXXVar(&%s... %+v\n", propertyVariable, propertyValue)
 			}
 		}
 	} else if def.Type == "procedure" && def.Input != nil {
 		for _, propertyName := range sortedPropertyNames(def.Input.Schema.Properties) {
+			propertyVariable := sanitize(propertyName)
 			propertyValue := def.Input.Schema.Properties[propertyName]
 			flagName := strcase.ToKebab(propertyName)
 			description := propertyName
 			switch propertyValue.Type {
 			case "string":
-				fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s\")\n", propertyName, flagName, description)
+				fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s\")\n", propertyVariable, flagName, description)
 			case "integer":
-				fmt.Fprintf(s, "cmd.Flags().Int64Var(&%s, \"%s\", %d, \"%s\")\n", propertyName, flagName, int64Value(propertyValue.Default), description)
+				fmt.Fprintf(s, "cmd.Flags().Int64Var(&%s, \"%s\", %d, \"%s\")\n", propertyVariable, flagName, int64Value(propertyValue.Default), description)
 			case "boolean":
-				fmt.Fprintf(s, "cmd.Flags().BoolVar(&%s, \"%s\", %t, \"%s\")\n", propertyName, flagName, boolValue(propertyValue.Default), description)
+				fmt.Fprintf(s, "cmd.Flags().BoolVar(&%s, \"%s\", %t, \"%s\")\n", propertyVariable, flagName, boolValue(propertyValue.Default), description)
 			case "array":
 				if propertyValue.Items.Type == "string" {
-					fmt.Fprintf(s, "cmd.Flags().StringArrayVar(&%s, \"%s\", nil, \"%s\")\n", propertyName, flagName, description)
+					fmt.Fprintf(s, "cmd.Flags().StringArrayVar(&%s, \"%s\", nil, \"%s\")\n", propertyVariable, flagName, description)
 				} else {
-					fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s (name of a json file)\")\n", propertyName, flagName, description)
+					fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s (name of a json file)\")\n", propertyVariable, flagName, description)
 				}
 			case "unknown", "ref", "union":
-				fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s (name of a json file)\")\n", propertyName, flagName, description)
+				fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s (name of a json file)\")\n", propertyVariable, flagName, description)
 			default:
-				fmt.Fprintf(s, "// FIXME cmd.Flags().XXXVar(&%s... %+v\n", propertyName, propertyValue)
+				fmt.Fprintf(s, "// FIXME cmd.Flags().XXXVar(&%s... %+v\n", propertyVariable, propertyValue)
 			}
 		}
 	}
