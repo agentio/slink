@@ -2,19 +2,26 @@ package slink
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/agentio/slink/pkg/resolve"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/lestrrat-go/jwx/v3/jws"
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"github.com/mr-tron/base58"
 )
+
+func NewJwtID() string {
+	bytes := make([]byte, 16)
+	_, _ = rand.Read(bytes) // never errors (https://cs.opensource.google/go/go/+/refs/tags/go1.27.1:src/crypto/rand/rand.go;l=47)
+	return hex.EncodeToString(bytes)
+}
 
 func GenerateAuthToken(keybytes []byte, claims map[string]any, typ string) ([]byte, error) {
 	privateJwk, err := jwk.Import(secp256k1.PrivKeyFromBytes(keybytes).ToECDSA())
@@ -27,7 +34,7 @@ func GenerateAuthToken(keybytes []byte, claims map[string]any, typ string) ([]by
 	}
 	now := time.Now()
 	builder := jwt.NewBuilder().
-		JwtID(uuid.NewString()).
+		JwtID(NewJwtID()).
 		IssuedAt(now).
 		Expiration(now.Add(30 * time.Second))
 	for k, v := range claims {

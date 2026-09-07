@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/agentio/slink/pkg/slink"
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +47,7 @@ func Cmd() *cobra.Command {
 				claims["lxm"] = lxm
 			}
 			if nonce {
-				claims["nonce"] = uuid.NewString()
+				claims["nonce"] = slink.NewJwtID()
 			}
 			tok, err := slink.GenerateAuthToken(keybytes, claims, typ)
 			if err != nil {
