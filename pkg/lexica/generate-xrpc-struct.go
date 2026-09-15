@@ -47,10 +47,18 @@ func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, prope
 			}
 		case "array":
 			itemstype := lexicon.resolveItemsType(defname, propertyName, property.Items)
-			fmt.Fprintf(s, "%s []%s `json:\"%s,omitempty\"`\n", capitalize(propertyName), itemstype, propertyName)
+			if required {
+				fmt.Fprintf(s, "%s []%s `json:\"%s\"`\n", capitalize(propertyName), itemstype, propertyName)
+			} else {
+				fmt.Fprintf(s, "%s []%s `json:\"%s,omitempty\"`\n", capitalize(propertyName), itemstype, propertyName)
+			}
 		case "ref":
 			reftype := lexicon.resolveRefType(property.Ref)
-			fmt.Fprintf(s, "%s %s `json:\"%s,omitempty\"`\n", capitalize(propertyName), reftype, propertyName)
+			if required {
+				fmt.Fprintf(s, "%s %s `json:\"%s\"`\n", capitalize(propertyName), reftype, propertyName)
+			} else {
+				fmt.Fprintf(s, "%s %s `json:\"%s,omitempty\"`\n", capitalize(propertyName), reftype, propertyName)
+			}
 		case "unknown":
 			if required {
 				fmt.Fprintf(s, "%s any `json:\"%s\"`\n", capitalize(propertyName), propertyName)
@@ -65,7 +73,11 @@ func (lexicon *Lexicon) generateStruct(s *strings.Builder, defname string, prope
 			}
 		case "union":
 			uniontype := lexicon.resolveUnionFieldType(defname, propertyName)
-			fmt.Fprintf(s, "%s *%s `json:\"%s,omitempty\"`\n", capitalize(propertyName), uniontype, propertyName)
+			if required {
+				fmt.Fprintf(s, "%s *%s `json:\"%s\"`\n", capitalize(propertyName), uniontype, propertyName)
+			} else {
+				fmt.Fprintf(s, "%s *%s `json:\"%s,omitempty\"`\n", capitalize(propertyName), uniontype, propertyName)
+			}
 		case "bytes":
 			if required {
 				fmt.Fprintf(s, "%s slink.Bytes `json:\"%s\"`\n", capitalize(propertyName), propertyName)
