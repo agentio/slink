@@ -13,10 +13,16 @@ func makeParams(p map[string]any) string {
 	for k, v := range p {
 		if s, ok := v.([]string); ok {
 			for _, v := range s {
-				params.Add(k, v)
+				if v != "" {
+					// omit parameters with empty values
+					params.Add(k, v)
+				}
 			}
 		} else {
-			params.Add(k, fmt.Sprint(v))
+			if v != "" {
+				// omit parameters with empty values
+				params.Add(k, fmt.Sprint(v))
+			}
 		}
 	}
 	return params.Encode()
