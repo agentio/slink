@@ -87,6 +87,8 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 			case "array":
 				if propertyValue.Items.Type == "string" {
 					fmt.Fprintf(s, "var %s []string\n", propertyVariable)
+				} else if propertyValue.Items.Type == "integer" {
+					fmt.Fprintf(s, "var %s []int\n", propertyVariable)
 				} else {
 					fmt.Fprintf(s, "// FIXME var %s %+v\n", propertyVariable, propertyValue)
 				}
@@ -108,6 +110,8 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 			case "array":
 				if propertyValue.Items.Type == "string" {
 					fmt.Fprintf(s, "var %s []string\n", propertyVariable)
+				} else if propertyValue.Items.Type == "integer" {
+					fmt.Fprintf(s, "var %s []int\n", propertyVariable)
 				} else {
 					fmt.Fprintf(s, "var %s string // (this should be a filename)\n", propertyVariable)
 				}
@@ -143,6 +147,8 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 				case "array":
 					if propertyValue.Items.Type == "string" {
 						fmt.Fprintf(s, "%s,\n", propertyVariable)
+					} else if propertyValue.Items.Type == "integer" {
+						fmt.Fprintf(s, "%s,\n", propertyVariable)
 					}
 				default:
 				}
@@ -159,7 +165,7 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 				if propertyValue.Type == "unknown" ||
 					propertyValue.Type == "ref" ||
 					propertyValue.Type == "union" ||
-					(propertyValue.Type == "array" && propertyValue.Items.Type != "string") {
+					(propertyValue.Type == "array" && propertyValue.Items.Type != "string" && propertyValue.Items.Type != "integer") {
 					fmt.Fprintf(s, "%s_value, err := slink.ReadJSONFile(%s)\n", propertyName, propertyName)
 					fmt.Fprintf(s, "if err != nil {return err}\n")
 				}
@@ -201,6 +207,8 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 					}
 				case "array":
 					if propertyValue.Items.Type == "string" {
+						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyVariable)
+					} else if propertyValue.Items.Type == "integer" {
 						fmt.Fprintf(s, "%s: %s,\n", capitalize(propertyName), propertyVariable)
 					} else {
 						itemstype := lexicon.resolveItemsType(defname+"_Input", propertyName, propertyValue.Items)
@@ -269,6 +277,8 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 			case "array":
 				if propertyValue.Items.Type == "string" {
 					fmt.Fprintf(s, "cmd.Flags().StringArrayVar(&%s, \"%s\", nil, \"%s\")\n", propertyVariable, flagName, description)
+				} else if propertyValue.Items.Type == "integer" {
+					fmt.Fprintf(s, "cmd.Flags().IntSliceVar(&%s, \"%s\", nil, \"%s\")\n", propertyVariable, flagName, description)
 				} else {
 					fmt.Fprintf(s, "// FIXME cmd.Flags().XXXVar(&%s... %+v\n", propertyVariable, propertyValue)
 				}
@@ -292,6 +302,8 @@ func (lexicon *Lexicon) generateCallCommandForDef(root, defname string, def *Def
 			case "array":
 				if propertyValue.Items.Type == "string" {
 					fmt.Fprintf(s, "cmd.Flags().StringArrayVar(&%s, \"%s\", nil, \"%s\")\n", propertyVariable, flagName, description)
+				} else if propertyValue.Items.Type == "integer" {
+					fmt.Fprintf(s, "cmd.Flags().IntSliceVar(&%s, \"%s\", nil, \"%s\")\n", propertyVariable, flagName, description)
 				} else {
 					fmt.Fprintf(s, "cmd.Flags().StringVar(&%s, \"%s\", \"\", \"%s (name of a json file)\")\n", propertyVariable, flagName, description)
 				}

@@ -23,7 +23,12 @@ func (lexicon *Lexicon) generateSubscribe(s *strings.Builder, defname string, de
 		if paramsok {
 			for _, parameterName := range sortedPropertyNames(def.Parameters.Properties) {
 				if parameterName == "cursor" {
-					fmt.Fprintf(s, "if %s >= 0 {params[\"%s\"] = %s}\n", parameterName, parameterName, parameterName)
+					cursorProperty := def.Parameters.Properties[parameterName]
+					if cursorProperty.Type == "string" {
+						fmt.Fprintf(s, "if %s != \"\" {params[\"%s\"] = %s}\n", parameterName, parameterName, parameterName)
+					} else {
+						fmt.Fprintf(s, "if %s >= 0 {params[\"%s\"] = %s}\n", parameterName, parameterName, parameterName)
+					}
 				} else {
 					fmt.Fprintf(s, "params[\"%s\"] = %s,\n", parameterName, parameterName)
 				}

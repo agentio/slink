@@ -81,6 +81,8 @@ func parseQueryParameters(parameters *Parameters) (string, bool) {
 		case "array":
 			if propertyValue.Items.Type == "string" {
 				declaration += "[]string"
+			} else if propertyValue.Items.Type == "integer" {
+				declaration += "[]int"
 			} else {
 				return "/* FIXME failing on unsupported parameter array value type: " + propertyValue.Items.Type + " */", false
 			}

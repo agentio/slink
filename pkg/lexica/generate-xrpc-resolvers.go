@@ -13,6 +13,8 @@ func (lexicon *Lexicon) resolveItemsType(defname, propname string, items *Items)
 	switch items.Type {
 	case "string":
 		return "string"
+	case "integer":
+		return "int"
 	case "unknown":
 		return "any"
 	case "cid-link":
@@ -38,6 +40,11 @@ func (lexicon *Lexicon) resolveRef(ref string) string {
 
 func (lexicon *Lexicon) resolveRefType(ref string) string {
 	if ref[0] == '#' {
+		tag := ref[1:]
+		refDef := lexicon.Lookup(tag)
+		if refDef.Type == "array" {
+			return "[]" + symbolForID(lexicon.Id) + "_" + capitalize(ref[1:]) + "_Elem"
+		}
 		typename := symbolForID(lexicon.Id) + "_" + capitalize(ref[1:])
 		return "*" + typename
 	} else {
