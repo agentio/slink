@@ -5,15 +5,16 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	es256k "github.com/jwx-go/es256k/v4"
 	"strings"
 	"time"
 
 	"github.com/agentio/slink/pkg/resolve"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/lestrrat-go/jwx/v3/jwa"
-	"github.com/lestrrat-go/jwx/v3/jwk"
-	"github.com/lestrrat-go/jwx/v3/jws"
-	"github.com/lestrrat-go/jwx/v3/jwt"
+	"github.com/lestrrat-go/jwx/v4/jwa"
+	"github.com/lestrrat-go/jwx/v4/jwk"
+	"github.com/lestrrat-go/jwx/v4/jws"
+	"github.com/lestrrat-go/jwx/v4/jwt"
 	"github.com/mr-tron/base58"
 )
 
@@ -24,7 +25,7 @@ func NewJwtID() string {
 }
 
 func GenerateAuthToken(keybytes []byte, claims map[string]any, typ string) ([]byte, error) {
-	privateJwk, err := jwk.Import(secp256k1.PrivKeyFromBytes(keybytes).ToECDSA())
+	privateJwk, err := jwk.Import[jwk.Key](secp256k1.PrivKeyFromBytes(keybytes).ToECDSA())
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +85,7 @@ func VerifyAuthToken(ctx context.Context, accessToken string) (*jwt.Token, error
 			if err != nil {
 				return nil, fmt.Errorf("failed to get user public key: %v", err)
 			}
-			token, err = jwt.Parse([]byte(accessToken), jwt.WithKey(jwa.ES256K(), key.ToECDSA()))
+			token, err = jwt.Parse([]byte(accessToken), jwt.WithKey(es256k.ES256K(), key.ToECDSA()))
 			if err != nil {
 				return nil, err
 			}
